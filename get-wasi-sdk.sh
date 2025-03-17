@@ -1,7 +1,6 @@
 #!/bin/bash
-
 # Set the WASI SDK version
-WASI_SDK_VERSION=20.0
+# WASI_SDK_VERSION=20.0
 
 # Detect the operating system
 OS=$(uname -s)
@@ -13,9 +12,9 @@ esac
 
 # Set the download URL based on the platform
 if [ "$PLATFORM" = "linux" ]; then
-    DOWNLOAD_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-20.0-linux.tar.gz"
+    DOWNLOAD_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-$WASI_SDK_VERSION-linux.tar.gz"
 else
-    DOWNLOAD_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-20.0-macos.tar.gz"
+    DOWNLOAD_URL="https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-20/wasi-sdk-$WASI_SDK_VERSION-macos.tar.gz"
 fi
 
 # Create wasi-sdk directory if it doesn't exist

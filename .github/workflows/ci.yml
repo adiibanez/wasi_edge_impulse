@@ -1,0 +1,50 @@
+name: Build edge impulse wasi wasm
+on:
+  push:
+    branches:
+      #- main
+  pull_request:
+env:
+  WASI_SDK_VERSION: 20.0
+  
+jobs:
+  build_setup:
+    name: Setup Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache WASI-SDK
+        uses: actions/cache@v4
+        id: wasi-cache
+        with:
+          path: wasi-sdk-${{ env.WASI_SDK_VERSION }}
+          key: wasi-cache-${{ runner.os }}-${{ env.WASI_SDK_VERSION }}
+
+      - name: Download WASI-SDK
+        if: steps.wasi-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          sh get-wasi-sdk.sh
+
+      - name: Build wasi wasm
+        shell: bash
+        id: build-wasm
+        run: |
+          WASI_SDK_PATH="wasi-sdk-$WASI_SDK_VERSION"
+          make && make install
+      
+      - name: Test artifact
+        shell: bash
+        run: |
+          file build/edge_impulse_wasi.wasm
+          ls -lah build/edge_impulse_wasi.wasm
+          
+          
+      - name: Upload wasm Artifact
+        uses: actions/upload-artifact@v4
+        if: steps.build-wasm.outcome == 'success'
+        with:
+          name: wasi-wasm-${{ runner.os }}-${{ env.WASI_SDK_VERSION }}
+          path: build/edge_impulse_wasi.wasm
