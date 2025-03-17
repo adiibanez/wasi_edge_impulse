@@ -39,14 +39,29 @@
 #include <stdlib.h>
 #include "edge-impulse-sdk/dsp/returntypes.h"
 
-#if defined(__cplusplus) && EI_C_LINKAGE == 1
+#ifdef __cplusplus
 extern "C" {
-#endif // defined(__cplusplus)
+#endif // __cplusplus
 
 /* Private functions ------------------------------------------------------- */
 
-EI_IMPULSE_ERROR ei_run_impulse_check_canceled();
+/**
+ * @brief      Check if impulse detection was canceled
+ *
+ * @return     EI_IMPULSE_CANCELED if canceled, EI_IMPULSE_OK otherwise
+ */
+EI_IMPULSE_ERROR ei_run_impulse_check_canceled(void);
+
 void ei_serial_set_baudrate(int baudrate);
+
+/**
+ * @brief      Allocate and initialize memory from heap
+ *
+ * @param[in]  nitems    Number of items to allocate
+ * @param[in]  size      Size of each item
+ * @return     Pointer to allocated memory
+ */
+void *ei_calloc(size_t nitems, size_t size);
 
 /* Public functions -------------------------------------------------------- */
 
@@ -197,40 +212,6 @@ void ei_printf_float(float f);
 void *ei_malloc(size_t size);
 
 /**
- * @brief Wrapper around calloc
- *
- * This function should allocate `nitems * size` bytes and initialize all bytes in this
- * allocated memory to 0. It should return a pointer to the allocated memory. In
- * bare-metal implementations, it can simply be a wrapper for `calloc()`. For example:
- *
- * ```
- * __attribute__((weak)) void *ei_calloc(size_t nitems, size_t size) {
- *     return calloc(nitems, size);
- * }
- * ```
- *
- * If you intend to run your impulse in a multi-threaded environment, you will need to
- * ensure that your implementation of `ei_calloc()` is thread-safe. For example, if you
- * are using FreeRTOS, here is one possible implementation:
- *
- * ```
- * __attribute__((weak)) void *ei_calloc(size_t nitems, size_t size) {
- *     void *ptr = NULL;
- *     if (size > 0) {
- *         ptr = pvPortMalloc(nitems * size);
- *         if(ptr)
- *            memset(ptr, 0, (nitems * size));
- *     }
- *     return ptr;
- * }
- * ```
- *
- * @param[in] nitems Number of blocks to allocate and clear
- * @param[in] size Size (in bytes) of each block
- */
-void *ei_calloc(size_t nitems, size_t size);
-
-/**
  * @brief Wrapper around free
  *
  * This function should free the memory space pointed to by `ptr`. If `ptr` is `NULL`,
@@ -258,10 +239,6 @@ void *ei_calloc(size_t nitems, size_t size);
 void ei_free(void *ptr);
 
 /** @} */
-
-#if defined(__cplusplus) && EI_C_LINKAGE == 1
-}
-#endif // defined(__cplusplus) && EI_C_LINKAGE == 1
 
 // Load porting layer depending on target
 
@@ -381,5 +358,9 @@ void ei_free(void *ptr);
 #endif
 
 // End additional configuration
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif // _EI_CLASSIFIER_PORTING_H_

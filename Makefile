@@ -1,16 +1,26 @@
+# Check if WASI_SDK_PATH is set
+ifndef WASI_SDK_PATH
+$(error WASI_SDK_PATH is not set. Please set it to the path of your WASI SDK installation)
+endif
+
 # Tool macros
-CC ?= gcc
-CXX ?= g++
+CC = $(WASI_SDK_PATH)/bin/clang
+CXX = $(WASI_SDK_PATH)/bin/clang++
 
 # Settings
 NAME = app
 BUILD_PATH = ./build
 
 # Location of main.cpp (must use C++ compiler for main)
-CXXSOURCES = main.cpp
+CXXSOURCES = src/main.cpp
 
-# Search path for header files (current directory)
+# WASI specific flags
+CFLAGS += --target=wasm32-wasi
+CFLAGS += --sysroot=$(WASI_SDK_PATH)/share/wasi-sysroot
+
+# Search path for header files
 CFLAGS += -I.
+CFLAGS += -I$(WASI_SDK_PATH)/share/wasi-sysroot/include
 
 # C and C++ Compiler flags
 CFLAGS += -Wall						# Include all warnings
@@ -24,8 +34,13 @@ CFLAGS += -DEI_CLASSIFIER_ENABLE_DETECTION_POSTPROCESS_OP	# Add TFLite_Detection
 CXXFLAGS += -std=c++14				# Use C++14 standard
 
 # Linker flags
-LDFLAGS += -lm 						# Link to math.h
-LDFLAGS += -lstdc++					# Link to stdc++.h
+LDFLAGS += -Wl,--no-entry -Wl,--export-all
+LDFLAGS += -nostartfiles
+LDFLAGS += -Wl,--allow-undefined
+LDFLAGS += -lstdc++
+LDFLAGS += -Wl,--export=run_model_inference
+LDFLAGS += -Wl,--export=get_model_parameters_json
+LDFLAGS += -Wl,--export=get_labels
 
 # Include C source code for required libraries
 CSOURCES += $(wildcard edge-impulse-sdk/CMSIS/DSP/Source/TransformFunctions/*.c) \
@@ -42,9 +57,7 @@ CXXSOURCES += 	$(wildcard tflite-model/*.cpp) \
 				$(wildcard edge-impulse-sdk/dsp/kissfft/*.cpp) \
 				$(wildcard edge-impulse-sdk/dsp/dct/*.cpp) \
 				$(wildcard edge-impulse-sdk/dsp/memory.cpp) \
-				$(wildcard edge-impulse-sdk/porting/posix/*.c*) \
-				$(wildcard edge-impulse-sdk/porting/mingw32/*.c*)
-CCSOURCES +=
+				$(wildcard edge-impulse-sdk/porting/wasi/*.cpp)
 
 # Use LiteRT (previously Tensorflow Lite) for Microcontrollers (TFLM)
 CFLAGS += -DTF_LITE_DISABLE_X86_NEON=1
@@ -55,32 +68,6 @@ CCSOURCES +=	$(wildcard edge-impulse-sdk/tensorflow/lite/kernels/*.cc) \
 				$(wildcard edge-impulse-sdk/tensorflow/lite/micro/*.cc) \
 				$(wildcard edge-impulse-sdk/tensorflow/lite/micro/memory_planner/*.cc) \
 				$(wildcard edge-impulse-sdk/tensorflow/lite/core/api/*.cc)
-
-# Include CMSIS-NN if compiling for an Arm target that supports it
-ifeq (${CMSIS_NN}, 1)
-
-	# Include CMSIS-NN and CMSIS-DSP header files
-	CFLAGS += -Iedge-impulse-sdk/CMSIS/NN/Include/
-	CFLAGS += -Iedge-impulse-sdk/CMSIS/DSP/PrivateInclude/
-
-	# C and C++ compiler flags for CMSIS-NN and CMSIS-DSP
-	CFLAGS += -Wno-unknown-attributes 					# Disable warnings about unknown attributes
-	CFLAGS += -DEI_CLASSIFIER_TFLITE_ENABLE_CMSIS_NN=1	# Use CMSIS-NN functions in the SDK
-	CFLAGS += -D__ARM_FEATURE_DSP=1 					# Enable CMSIS-DSP optimized features
-	CFLAGS += -D__GNUC_PYTHON__=1						# Enable CMSIS-DSP intrisics (non-C features)
-
-	# Include C source code for required CMSIS libraries
-	CSOURCES += $(wildcard edge-impulse-sdk/CMSIS/NN/Source/ActivationFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/BasicMathFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/ConcatenationFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/ConvolutionFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/FullyConnectedFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/NNSupportFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/PoolingFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/ReshapeFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/SoftmaxFunctions/*.c) \
-				$(wildcard edge-impulse-sdk/CMSIS/NN/Source/SVDFunctions/*.c)
-endif
 
 # Generate names for the output object files (*.o)
 COBJECTS := $(patsubst %.c,%.o,$(CSOURCES))
