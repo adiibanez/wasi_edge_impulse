@@ -8,7 +8,7 @@ CC = $(WASI_SDK_PATH)/bin/clang
 CXX = $(WASI_SDK_PATH)/bin/clang++
 
 # Settings
-NAME = app
+NAME = edge_impulse_wasi.wasm
 BUILD_PATH = ./build
 
 # Location of main.cpp (must use C++ compiler for main)
@@ -17,6 +17,9 @@ CXXSOURCES = src/main.cpp
 # WASI specific flags
 CFLAGS += --target=wasm32-wasi
 CFLAGS += --sysroot=$(WASI_SDK_PATH)/share/wasi-sysroot
+
+# Disable C++ exceptions to avoid runtime errors
+CXXFLAGS += -fno-exceptions
 
 # Search path for header files
 CFLAGS += -I.
@@ -98,6 +101,7 @@ else
 	mkdir -p $(BUILD_PATH)
 endif
 	$(CXX) $(COBJECTS) $(CXXOBJECTS) $(CCOBJECTS) -o $(BUILD_PATH)/$(NAME) $(LDFLAGS)
+	@echo "Build completed: $(BUILD_PATH)/$(NAME)"
 
 # Remove compiled object files
 .PHONY: clean
