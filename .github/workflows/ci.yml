@@ -32,7 +32,7 @@ jobs:
         shell: bash
         id: build-wasm
         run: |
-          WASI_SDK_PATH="wasi-sdk-$WASI_SDK_VERSION"
+          export WASI_SDK_PATH="wasi-sdk-20.0"
           make && make install
       
       - name: Test artifact
