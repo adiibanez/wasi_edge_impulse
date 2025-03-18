@@ -19,7 +19,7 @@ jobs:
         uses: actions/cache@v4
         id: wasi-cache
         with:
-          path: wasi-sdk-${{ env.WASI_SDK_VERSION }}
+          path: wasi-sdk-20.0
           key: wasi-cache-${{ runner.os }}-${{ env.WASI_SDK_VERSION }}
 
       - name: Download WASI-SDK
