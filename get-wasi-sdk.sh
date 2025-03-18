@@ -30,4 +30,4 @@ if [ ! -d "wasi-sdk-20.0/bin" ]; then
     exit 1
 fi
 
-echo "WASI SDK 20.0 installed successfully in wasi-sdk-20.0
+echo "WASI SDK 20.0 installed successfully in wasi-sdk-20.0"
