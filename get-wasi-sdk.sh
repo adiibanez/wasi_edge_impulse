@@ -18,16 +18,16 @@ else
 fi
 
 # Create wasi-sdk directory if it doesn't exist
-mkdir -p wasi-sdk-$WASI_SDK_VERSION
+mkdir -p wasi-sdk-20.0
 
 # Download and extract the WASI SDK
 echo "Downloading WASI SDK for $PLATFORM..."
-curl -L "$DOWNLOAD_URL" | tar xz --strip-components=1 -C wasi-sdk-$WASI_SDK_VERSION
+curl -L "$DOWNLOAD_URL" | tar xz --strip-components=1 -C wasi-sdk-20.0
 
 # Make sure the SDK was extracted successfully
-if [ ! -d "wasi-sdk-$WASI_SDK_VERSION/bin" ]; then
+if [ ! -d "wasi-sdk-20.0/bin" ]; then
     echo "Failed to extract WASI SDK"
     exit 1
 fi
 
-echo "WASI SDK $WASI_SDK_VERSION installed successfully in wasi-sdk-$WASI_SDK_VERSION/"
+echo "WASI SDK 20.0 installed successfully in wasi-sdk-20.0
